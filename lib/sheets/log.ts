@@ -1,14 +1,28 @@
 import { getSheetsClient, getSheetConfig } from "./client";
 
 export const LOG_TAB = "LOG";
-export const LOG_HEADERS = ["timestamp", "email", "ip", "user_agent", "referrer", "path"] as const;
+export const LOG_HEADERS = [
+  "timestamp",
+  "email",
+  "name",
+  "auth_method",
+  "ip",
+  "country",
+  "region",
+  "city",
+  "user_agent",
+  "referrer",
+  "path",
+] as const;
 export type LogHeader = (typeof LOG_HEADERS)[number];
+
+const LAST_COLUMN_LETTER = "K";
 
 async function ensureLogHeaders(): Promise<void> {
   const sheets = getSheetsClient();
   const { spreadsheetId } = getSheetConfig();
 
-  const range = `${LOG_TAB}!A1:F1`;
+  const range = `${LOG_TAB}!A1:${LAST_COLUMN_LETTER}1`;
   const current = await sheets.spreadsheets.values.get({ spreadsheetId, range });
 
   const headers = current.data.values?.[0] ?? [];
@@ -26,9 +40,14 @@ async function ensureLogHeaders(): Promise<void> {
   }
 }
 
-interface LogEntry {
+export interface LogEntry {
   email: string;
+  name: string;
+  authMethod: "google" | "manual";
   ip: string;
+  country: string;
+  region: string;
+  city: string;
   userAgent: string;
   referrer: string;
   path: string;
@@ -40,7 +59,19 @@ export async function appendLogEntry(entry: LogEntry): Promise<void> {
   const { spreadsheetId } = getSheetConfig();
 
   const timestamp = new Date().toISOString();
-  const row = [timestamp, entry.email, entry.ip, entry.userAgent, entry.referrer, entry.path];
+  const row = [
+    timestamp,
+    entry.email,
+    entry.name,
+    entry.authMethod,
+    entry.ip,
+    entry.country,
+    entry.region,
+    entry.city,
+    entry.userAgent,
+    entry.referrer,
+    entry.path,
+  ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,

@@ -1,21 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, CheckCircle2 } from "lucide-react";
+import { Bell, CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Dialog } from "@/components/ui/Dialog";
+import { GoogleSignInButton } from "@/components/global/GoogleSignInButton";
 
-const SESSION_KEY = "binkis_subscribe_prompt_v1";
+const SESSION_KEY = "binkis_subscribe_prompt_v2";
+
+type Stage = "choose" | "manual" | "done";
 
 export function SubscribePrompt() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [stage, setStage] = useState<Stage>("choose");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [completedName, setCompletedName] = useState<string>("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26,7 +30,7 @@ export function SubscribePrompt() {
         return () => clearTimeout(t);
       }
     } catch {
-      // ignore storage errors (e.g. SSR or restricted env)
+      // storage unavailable, just skip
     }
   }, []);
 
@@ -43,7 +47,39 @@ export function SubscribePrompt() {
     setOpen(false);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleGoogleCredential = useCallback(
+    async (credential: string) => {
+      setError(null);
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            authMethod: "google",
+            credential,
+            path: pathname,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Error registrando con Google");
+          return;
+        }
+        setCompletedName(data.name ?? data.email ?? "");
+        setStage("done");
+        markSeen();
+        setTimeout(() => setOpen(false), 1600);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error registrando con Google");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [pathname]
+  );
+
+  async function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
@@ -51,16 +87,21 @@ export function SubscribePrompt() {
       const res = await fetch("/api/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, path: pathname }),
+        body: JSON.stringify({
+          authMethod: "manual",
+          email,
+          path: pathname,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Error registrando");
         return;
       }
-      setDone(true);
+      setCompletedName(email);
+      setStage("done");
       markSeen();
-      setTimeout(() => setOpen(false), 1400);
+      setTimeout(() => setOpen(false), 1600);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error registrando");
     } finally {
@@ -73,50 +114,98 @@ export function SubscribePrompt() {
       open={open}
       onClose={handleClose}
       title="Recibir novedades de BinKis"
-      description="Te avisamos cuando salga una nueva edicion limitada o un sorteo. Tu correo y tu IP se guardan en nuestro registro interno."
+      description="Te avisamos cuando salga una nueva edicion limitada o un sorteo. Guardamos tu correo, IP y pais en nuestro registro interno."
       className="max-w-sm"
       footer={
-        done ? (
+        stage === "done" ? (
           <div className="flex items-center justify-end gap-2 text-xs text-status-claimed">
             <CheckCircle2 size={14} strokeWidth={2.5} />
-            Suscripcion registrada
+            <span>Listo, {completedName.split("@")[0] || "te avisaremos"}</span>
+          </div>
+        ) : stage === "manual" ? (
+          <div className="flex items-center justify-between gap-2">
+            <Button variant="ghost" onClick={() => setStage("choose")} disabled={submitting}>
+              Volver
+            </Button>
+            <Button type="submit" form="subscribe-manual-form" loading={submitting}>
+              Suscribirme
+            </Button>
           </div>
         ) : (
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" onClick={handleClose} disabled={submitting}>
               Ahora no
             </Button>
-            <Button type="submit" form="subscribe-form" loading={submitting}>
-              Si, suscribirme
-            </Button>
           </div>
         )
       }
     >
-      <form id="subscribe-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-start gap-3 rounded-md border border-ink-100 bg-surface-muted px-3 py-2.5">
           <Bell size={16} strokeWidth={2} className="mt-0.5 shrink-0 text-ink-500" />
           <p className="text-xs leading-relaxed text-ink-700">
-            Quieres recibir un aviso cuando se active una nueva campana de BinKis?
-            Si es asi, dejanos tu correo y presiona <strong>Si, suscribirme</strong>.
+            Una nueva edicion limitada se lanza pronto. Suscribite con un click si queres recibir
+            el aviso.
           </p>
         </div>
-        <Input
-          label="Tu correo"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="tu@correo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={submitting || done}
-          error={error ?? undefined}
-        />
-        <p className="text-[11px] text-ink-400">
-          Al continuar autorizas el almacenamiento de tu correo, tu IP y la pagina desde la que te
-          suscribiste. Podes pedir su eliminacion en cualquier momento.
-        </p>
-      </form>
+
+        {stage === "choose" ? (
+          <div className="flex flex-col gap-3">
+            <GoogleSignInButton onCredential={handleGoogleCredential} />
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-ink-100" />
+              <span className="text-[10px] font-medium uppercase tracking-widest text-ink-400">
+                O bien
+              </span>
+              <div className="h-px flex-1 bg-ink-100" />
+            </div>
+            <button
+              type="button"
+              onClick={() => setStage("manual")}
+              disabled={submitting}
+              className="flex items-center justify-center gap-2 rounded-md border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 hover:bg-surface-muted"
+            >
+              <Mail size={14} strokeWidth={2.25} />
+              Usar mi correo manualmente
+            </button>
+            {error ? (
+              <p className="text-xs text-status-invalid">{error}</p>
+            ) : null}
+            <p className="text-[11px] leading-relaxed text-ink-400">
+              Al continuar autorizas el almacenamiento de tu correo, nombre (si lo das via Google),
+              IP, pais y la pagina desde la que te suscribiste. Podes pedir su eliminacion en
+              cualquier momento.
+            </p>
+          </div>
+        ) : null}
+
+        {stage === "manual" ? (
+          <form id="subscribe-manual-form" onSubmit={handleManualSubmit} className="flex flex-col gap-3">
+            <Input
+              label="Tu correo"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="tu@correo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={submitting}
+              error={error ?? undefined}
+            />
+            <p className="text-[11px] text-ink-400">
+              Tu correo y la informacion del navegador se guardan en el sheet interno.
+            </p>
+          </form>
+        ) : null}
+
+        {stage === "done" ? (
+          <div className="flex flex-col items-center gap-2 rounded-md border border-status-claimed/20 bg-status-claimedBg/40 px-4 py-5 text-center">
+            <CheckCircle2 size={28} className="text-status-claimed" strokeWidth={2} />
+            <p className="text-sm font-semibold text-ink-900">Suscripcion registrada</p>
+            <p className="text-xs text-ink-700">Te vamos a avisar cuando se lance la proxima edicion.</p>
+          </div>
+        ) : null}
+      </div>
     </Dialog>
   );
 }
