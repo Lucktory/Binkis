@@ -1,5 +1,6 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { CodesTable } from "@/components/admin/CodesTable";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { getAllCodes } from "@/lib/sheets/codes";
 import { formatNumber } from "@/lib/format";
 
@@ -17,6 +18,7 @@ export default async function WinnersPage() {
       <Topbar
         title="Ganadores"
         description={`${formatNumber(winners.length)} ganadores han reclamado su premio`}
+        action={<ExportButton scope="winners" disabled={winners.length === 0} label="Exportar ganadores" />}
       />
       <div className="p-8">
         <CodesTable codes={winners} showWinner />

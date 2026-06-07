@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { formatNumber } from "@/lib/format";
 
 interface GenerateFormProps {
@@ -12,10 +14,19 @@ interface GenerateFormProps {
   maxPerBatch?: number;
 }
 
+interface UniquenessReport {
+  verified: boolean;
+  existingBefore: number;
+  addedNow: number;
+  totalAfter: number;
+  duplicatesDetected: number;
+}
+
 interface LastResult {
   generated: number;
   totalAfter: number;
   codes: string[];
+  uniqueness?: UniquenessReport;
 }
 
 export function GenerateForm({ currentTotal, maxPerBatch = 100 }: GenerateFormProps) {
@@ -52,6 +63,7 @@ export function GenerateForm({ currentTotal, maxPerBatch = 100 }: GenerateFormPr
         generated: data.generated,
         totalAfter: data.totalAfter,
         codes: data.codes,
+        uniqueness: data.uniqueness,
       });
       startTransition(() => router.refresh());
     } catch (err) {
@@ -127,14 +139,46 @@ export function GenerateForm({ currentTotal, maxPerBatch = 100 }: GenerateFormPr
         </CardHeader>
         <CardBody>
           {result ? (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm text-ink-700 sm:grid-cols-3 lg:grid-cols-4">
-              {result.codes.map((c) => (
-                <span key={c}>{c}</span>
-              ))}
+            <div className="flex flex-col gap-4">
+              {result.uniqueness ? (
+                <div
+                  className={
+                    result.uniqueness.verified
+                      ? "flex items-center gap-3 rounded-md border border-status-claimed/20 bg-status-claimedBg/40 px-4 py-2.5"
+                      : "flex items-center gap-3 rounded-md border border-status-invalid/20 bg-status-invalidBg/60 px-4 py-2.5"
+                  }
+                >
+                  <ShieldCheck
+                    size={16}
+                    strokeWidth={2.5}
+                    className={result.uniqueness.verified ? "text-status-claimed" : "text-status-invalid"}
+                  />
+                  <div className="flex flex-1 flex-col">
+                    <p className="text-xs font-semibold text-ink-900">
+                      {result.uniqueness.verified
+                        ? "Unicidad verificada"
+                        : "Anomalia detectada"}
+                    </p>
+                    <p className="text-[11px] text-ink-500">
+                      {result.uniqueness.existingBefore} previos + {result.uniqueness.addedNow} nuevos = {result.uniqueness.totalAfter} totales.
+                      Duplicados detectados: {result.uniqueness.duplicatesDetected}.
+                    </p>
+                  </div>
+                  <Badge tone={result.uniqueness.verified ? "success" : "danger"}>
+                    {result.uniqueness.verified ? "OK" : "Revisar"}
+                  </Badge>
+                </div>
+              ) : null}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-sm text-ink-700 sm:grid-cols-3 lg:grid-cols-4">
+                {result.codes.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
             </div>
           ) : (
             <p className="text-sm text-ink-400">
-              Una vez que ejecute la generacion, aqui veras los codigos creados en este batch.
+              Una vez que ejecute la generacion, aqui veras los codigos creados en este batch
+              junto con la verificacion de unicidad contra el sheet.
             </p>
           )}
         </CardBody>

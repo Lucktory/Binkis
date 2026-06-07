@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { formatDateTime } from "@/lib/format";
@@ -24,7 +25,14 @@ export function CodesTable({ codes, showWinner = false }: CodesTableProps) {
         <TBody>
           <tr>
             <td colSpan={showWinner ? 6 : 5}>
-              <EmptyState>Aun no hay codigos generados.</EmptyState>
+              <EmptyState>
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-sm font-medium text-ink-700">No hay codigos aun</p>
+                  <p className="text-xs text-ink-400">
+                    Genera tu primer batch desde la pagina &quot;Generar&quot;.
+                  </p>
+                </div>
+              </EmptyState>
             </td>
           </tr>
         </TBody>
@@ -45,8 +53,8 @@ export function CodesTable({ codes, showWinner = false }: CodesTableProps) {
       <TBody>
         {codes.map((c) => (
           <TR key={c.code}>
-            <TD className="font-mono text-ink-900">{c.code}</TD>
-            <TD>{formatDateTime(c.generatedAt)}</TD>
+            <TD className="font-mono text-[13px] font-medium tracking-wider text-ink-900">{c.code}</TD>
+            <TD className="text-ink-500">{formatDateTime(c.generatedAt)}</TD>
             <TD>
               {c.claimed ? (
                 <Badge tone="success">Reclamado</Badge>
@@ -58,7 +66,7 @@ export function CodesTable({ codes, showWinner = false }: CodesTableProps) {
             {showWinner ? (
               <TD>
                 {c.winnerName ? (
-                  <div className="flex flex-col">
+                  <div className="flex flex-col leading-tight">
                     <span className="text-ink-900">{c.winnerName}</span>
                     <span className="text-xs text-ink-400">{c.winnerEmail}</span>
                   </div>
@@ -70,9 +78,10 @@ export function CodesTable({ codes, showWinner = false }: CodesTableProps) {
             <TD className="text-right">
               <Link
                 href={`/card/${c.code}`}
-                className="text-xs font-medium text-accent hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
               >
                 Ver hologram
+                <ArrowUpRight size={12} strokeWidth={2.5} />
               </Link>
             </TD>
           </TR>
