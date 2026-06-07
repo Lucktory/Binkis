@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/Toast";
 import { formatNumber } from "@/lib/format";
 
 interface GenerateFormProps {
@@ -31,6 +32,7 @@ interface LastResult {
 
 export function GenerateForm({ currentTotal, maxPerBatch = 100 }: GenerateFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const [count, setCount] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LastResult | null>(null);
@@ -65,6 +67,10 @@ export function GenerateForm({ currentTotal, maxPerBatch = 100 }: GenerateFormPr
         codes: data.codes,
         uniqueness: data.uniqueness,
       });
+      toast.success(
+        `${data.generated} codigos generados`,
+        `Total acumulado: ${formatNumber(data.totalAfter)}`
+      );
       startTransition(() => router.refresh());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error generando codigos");

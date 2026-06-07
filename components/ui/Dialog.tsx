@@ -42,11 +42,11 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
         type="button"
         aria-label="Cerrar"
         onClick={onClose}
-        className="absolute inset-0 bg-ink-900/40"
+        className="absolute inset-0 bg-ink-900/30 backdrop-blur-[1px] animate-fadeIn"
       />
       <div
         className={cn(
-          "relative z-10 flex w-full max-w-md flex-col overflow-hidden rounded-lg border border-ink-200 bg-white shadow-soft",
+          "relative z-10 flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-elevated animate-scaleIn",
           className
         )}
       >

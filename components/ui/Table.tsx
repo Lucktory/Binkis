@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 
 export function Table({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-hidden rounded-lg border border-ink-200 bg-white shadow-card", className)}>
+    <div className={cn("overflow-hidden rounded-xl border border-ink-200 bg-white shadow-card", className)}>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">{children}</table>
       </div>
@@ -13,18 +13,28 @@ export function Table({ children, className }: { children: ReactNode; className?
 
 export function THead({ children }: { children: ReactNode }) {
   return (
-    <thead className="border-b border-ink-200 bg-surface-muted">
+    <thead className="sticky top-0 border-b border-ink-200 bg-surface-muted/95 backdrop-blur-sm">
       <tr>{children}</tr>
     </thead>
   );
 }
 
 export function TBody({ children }: { children: ReactNode }) {
-  return <tbody className="divide-y divide-ink-100">{children}</tbody>;
+  return <tbody>{children}</tbody>;
 }
 
-export function TR({ children, className }: { children: ReactNode; className?: string }) {
-  return <tr className={cn("hover:bg-surface-muted/60", className)}>{children}</tr>;
+export function TR({ children, className, striped }: { children: ReactNode; className?: string; striped?: boolean }) {
+  return (
+    <tr
+      className={cn(
+        "border-b border-ink-100 transition-colors hover:bg-surface-muted/50",
+        striped ? "bg-surface-base/40" : "",
+        className
+      )}
+    >
+      {children}
+    </tr>
+  );
 }
 
 export function TH({ children, className, ...props }: ThHTMLAttributes<HTMLTableCellElement> & { children: ReactNode }) {
@@ -51,7 +61,7 @@ export function TD({ children, className, ...props }: TdHTMLAttributes<HTMLTable
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="border-t border-ink-100 px-4 py-12 text-center text-sm text-ink-400">
+    <div className="border-t border-ink-100 px-4 py-16 text-center text-sm text-ink-400">
       {children}
     </div>
   );

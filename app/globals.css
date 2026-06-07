@@ -8,7 +8,7 @@
 
 html,
 body {
-  background-color: #f8f9fa;
+  background-color: #fafaf9;
   color: #0b0d0f;
   font-feature-settings: "cv11", "ss03";
   -webkit-font-smoothing: antialiased;
@@ -17,6 +17,19 @@ body {
 
 * {
   border-color: #e8ebef;
+}
+
+/* Sticky scroll for sub-elements that need it */
+.scroll-shadow {
+  background:
+    linear-gradient(white 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%,
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0)) 0 100%;
+  background-repeat: no-repeat;
+  background-color: white;
+  background-size: 100% 24px, 100% 24px, 100% 8px, 100% 8px;
+  background-attachment: local, local, scroll, scroll;
 }
 
 /* Hologram card: holographic finish via static layered gradients (no animation, no shimmer) */
@@ -42,13 +55,12 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f3f5;
+  background: #f4f4f2;
 }
 ::-webkit-scrollbar-thumb {
   background: #d6dae0;
@@ -56,4 +68,8 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #a6acb6;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

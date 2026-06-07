@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
+import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/cn";
 
 type Scope = "all" | "winners" | "available";
@@ -69,6 +70,7 @@ export function ExportButton({ defaultScope = "all", label = "Exportar", disable
     new Set(COLUMN_OPTIONS.map((c) => c.key))
   );
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   function applyPreset(id: string) {
     const preset = PRESETS.find((p) => p.id === id);
@@ -88,7 +90,7 @@ export function ExportButton({ defaultScope = "all", label = "Exportar", disable
 
   async function handleExport() {
     if (selected.size === 0) {
-      alert("Selecciona al menos una columna para exportar");
+      toast.error("Selecciona al menos una columna");
       return;
     }
     setLoading(true);
@@ -119,8 +121,9 @@ export function ExportButton({ defaultScope = "all", label = "Exportar", disable
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       setOpen(false);
+      toast.success("CSV descargado", filename);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error exportando");
+      toast.error(err instanceof Error ? err.message : "Error exportando");
     } finally {
       setLoading(false);
     }

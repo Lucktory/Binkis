@@ -169,3 +169,56 @@ export function computeMetrics(records: CodeRecord[]): CodeMetrics {
     latestGeneratedAt: latest,
   };
 }
+
+interface DailyBuckets {
+  generated: number[];
+  claimed: number[];
+  available: number[];
+  cumulative: number[];
+  dayLabels: string[];
+}
+
+export function buildDailySeries(records: CodeRecord[], days = 7): DailyBuckets {
+  const now = new Date();
+  const buckets: { date: Date; key: string; label: string }[] = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    buckets.push({ date: d, key, label: key.slice(5) });
+  }
+
+  const generated = new Array(days).fill(0) as number[];
+  const claimed = new Array(days).fill(0) as number[];
+
+  for (const r of records) {
+    if (r.generatedAt) {
+      const k = r.generatedAt.slice(0, 10);
+      const idx = buckets.findIndex((b) => b.key === k);
+      if (idx >= 0) generated[idx] += 1;
+    }
+    if (r.claimedAt) {
+      const k = r.claimedAt.slice(0, 10);
+      const idx = buckets.findIndex((b) => b.key === k);
+      if (idx >= 0) claimed[idx] += 1;
+    }
+  }
+
+  const cumulative: number[] = [];
+  let running = records.length - generated.reduce((a, b) => a + b, 0);
+  for (const g of generated) {
+    running += g;
+    cumulative.push(running);
+  }
+
+  const available = generated.map((g, i) => Math.max(0, g - claimed[i]));
+
+  return {
+    generated,
+    claimed,
+    available,
+    cumulative,
+    dayLabels: buckets.map((b) => b.label),
+  };
+}
