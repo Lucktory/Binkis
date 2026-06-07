@@ -17,6 +17,10 @@ const bodySchema = z.discriminatedUnion("authMethod", [
     email: z.string().email("Correo invalido").max(200),
     path: z.string().max(500).optional(),
   }),
+  z.object({
+    authMethod: z.literal("visit"),
+    path: z.string().max(500).optional(),
+  }),
 ]);
 
 export async function POST(request: Request) {
@@ -35,8 +39,8 @@ export async function POST(request: Request) {
     );
   }
 
-  let email: string;
-  let name: string;
+  let email = "";
+  let name = "";
 
   if (parsed.data.authMethod === "google") {
     try {
@@ -47,9 +51,8 @@ export async function POST(request: Request) {
       const message = err instanceof Error ? err.message : "Google auth error";
       return NextResponse.json({ error: message }, { status: 400 });
     }
-  } else {
+  } else if (parsed.data.authMethod === "manual") {
     email = parsed.data.email;
-    name = "";
   }
 
   const geo = extractGeo(request);

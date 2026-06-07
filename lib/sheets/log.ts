@@ -43,7 +43,7 @@ async function ensureLogHeaders(): Promise<void> {
 export interface LogEntry {
   email: string;
   name: string;
-  authMethod: "google" | "manual";
+  authMethod: "google" | "manual" | "visit";
   ip: string;
   country: string;
   region: string;

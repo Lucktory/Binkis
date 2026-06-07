@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import { SubscribePrompt } from "@/components/global/SubscribePrompt";
 import { GoogleOneTap } from "@/components/global/GoogleOneTap";
+import { VisitLogger } from "@/components/global/VisitLogger";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ToastProvider>
           {children}
+          <VisitLogger />
           <GoogleOneTap />
           <SubscribePrompt />
         </ToastProvider>
