@@ -18,9 +18,9 @@ export default async function WinnersPage() {
       <Topbar
         title="Ganadores"
         description={`${formatNumber(winners.length)} ganadores han reclamado su premio`}
-        action={<ExportButton scope="winners" disabled={winners.length === 0} label="Exportar ganadores" />}
+        action={<ExportButton defaultScope="winners" disabled={winners.length === 0} label="Exportar ganadores" />}
       />
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <CodesTable codes={winners} showWinner />
       </div>
     </>

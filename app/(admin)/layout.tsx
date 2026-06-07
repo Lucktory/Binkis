@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/admin/Sidebar";
+import { MobileNav } from "@/components/admin/MobileNav";
 
 export default function AdminLayout({
   children,
@@ -8,7 +9,10 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen bg-surface-base">
       <Sidebar />
-      <main className="flex flex-1 flex-col">{children}</main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MobileNav />
+        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+      </div>
     </div>
   );
 }

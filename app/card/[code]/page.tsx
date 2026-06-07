@@ -42,7 +42,7 @@ export default async function CardPage({ params }: PageProps) {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10 lg:flex-row lg:items-start">
+      <main className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:flex-row lg:items-start">
         <div className="flex-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Vista previa del hologram</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink-900">Codigo asignado: {code}</h1>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
+import { SubscribePrompt } from "@/components/global/SubscribePrompt";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -24,7 +25,10 @@ export default function RootLayout({
       <head>
         <meta name="google" content="notranslate" />
       </head>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {children}
+        <SubscribePrompt />
+      </body>
     </html>
   );
 }

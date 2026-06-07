@@ -10,7 +10,7 @@ export default function VerifyPage() {
         title="Verificar codigo"
         description="Confirma si un codigo cualquiera es ganador, ya fue reclamado o no existe."
       />
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <CodeChecker />
       </div>
     </>
