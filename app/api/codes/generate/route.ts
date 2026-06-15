@@ -5,13 +5,14 @@ import { generateUniqueCodes } from "@/lib/codes/generator";
 
 export const dynamic = "force-dynamic";
 
-const MAX_BATCH_SIZE = 100;
+const MIN_BATCH_SIZE = 100;
+const MAX_BATCH_SIZE = 10000;
 
 const bodySchema = z.object({
   count: z
     .number()
     .int()
-    .min(1, "Debe generar al menos 1 codigo")
+    .min(MIN_BATCH_SIZE, `Minimo ${MIN_BATCH_SIZE} codigos por batch`)
     .max(MAX_BATCH_SIZE, `Maximo ${MAX_BATCH_SIZE} codigos por batch`),
 });
 

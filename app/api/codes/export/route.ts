@@ -3,7 +3,7 @@ import { SHEET_HEADERS, recordToRow } from "@/lib/sheets/schema";
 
 export const dynamic = "force-dynamic";
 
-type Scope = "all" | "winners" | "available";
+type Scope = "all" | "winners" | "available" | "factory";
 
 function escapeCsv(value: string): string {
   if (value === "") return "";
@@ -23,13 +23,50 @@ function parseColumns(raw: string | null): readonly string[] {
   return requested.filter((c) => (SHEET_HEADERS as readonly string[]).includes(c));
 }
 
+function sanitizeDomain(input: string | null): string {
+  if (!input) return "";
+  return input
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/.*$/, "")
+    .toLowerCase();
+}
+
+function buildFactoryCsv(codes: string[], domain: string): string {
+  const lines: string[] = ["URL,sequence_no,pin_code"];
+  codes.forEach((code, idx) => {
+    const url = domain
+      ? `https://${domain}/claim?code=${code}`
+      : code;
+    lines.push([escapeCsv(url), String(idx + 1), ""].join(","));
+  });
+  return lines.join("\r\n");
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const scope = (url.searchParams.get("scope") ?? "all") as Scope;
-  const columns = parseColumns(url.searchParams.get("columns"));
+  const domain = sanitizeDomain(url.searchParams.get("domain"));
+  const today = new Date().toISOString().slice(0, 10);
 
   try {
     const all = await getAllCodes();
+
+    if (scope === "factory") {
+      const codes = all.map((r) => r.code);
+      const csv = buildFactoryCsv(codes, domain);
+      const filename = `binkis-fabrica-${today}.csv`;
+      return new Response("﻿" + csv, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    const columns = parseColumns(url.searchParams.get("columns"));
     const filtered = all.filter((r) => {
       if (scope === "winners") return r.claimed;
       if (scope === "available") return !r.claimed;
@@ -53,7 +90,6 @@ export async function GET(request: Request) {
     }
     const csv = lines.join("\r\n");
 
-    const today = new Date().toISOString().slice(0, 10);
     const scopePart = scope === "winners" ? "ganadores" : scope === "available" ? "disponibles" : "todos";
     const filename = `binkis-${scopePart}-${today}.csv`;
 
