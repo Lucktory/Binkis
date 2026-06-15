@@ -33,13 +33,9 @@ function sanitizeDomain(input: string | null): string {
 }
 
 function buildFactoryCsv(codes: string[], domain: string): string {
-  const lines: string[] = ["URL,sequence_no,pin_code"];
-  codes.forEach((code, idx) => {
-    const url = domain
-      ? `https://${domain}/claim?code=${code}`
-      : code;
-    lines.push([escapeCsv(url), String(idx + 1), ""].join(","));
-  });
+  const lines = codes.map((code) =>
+    domain ? `https://${domain}/claim?code=${code}` : code
+  );
   return lines.join("\r\n");
 }
 

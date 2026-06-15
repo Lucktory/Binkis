@@ -15,7 +15,7 @@ export default async function GeneratePage() {
         description="Cada batch se agrega al sheet existente. El acumulado crece con cada ejecucion."
       />
       <div className="p-4 sm:p-6 lg:p-8">
-        <GenerateForm currentTotal={codes.length} maxPerBatch={100} />
+        <GenerateForm currentTotal={codes.length} maxPerBatch={10000} />
       </div>
     </>
   );
