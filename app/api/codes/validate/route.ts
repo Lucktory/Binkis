@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findCode } from "@/lib/sheets/codes";
+import { findCode } from "@/lib/supabase/codes";
 import { isValidCodeFormat } from "@/lib/codes/generator";
 import type { ValidationResult } from "@/types";
 
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   try {
     const record = await findCode(code);
-    if (!record) {
+    if (!record || !record.isWinner) {
       const result: ValidationResult = { state: "invalid", code };
       return NextResponse.json(result);
     }

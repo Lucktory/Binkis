@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { appendLogEntry } from "@/lib/sheets/log";
+import { appendLogEntry } from "@/lib/supabase/log";
 import { extractGeo } from "@/lib/geo";
 import { verifyGoogleCredential } from "@/lib/google-auth";
 

@@ -1,9 +1,20 @@
-import { getAllCodes } from "@/lib/sheets/codes";
-import { SHEET_HEADERS, recordToRow } from "@/lib/sheets/schema";
+import { getAllCodes } from "@/lib/supabase/codes";
 
 export const dynamic = "force-dynamic";
 
 type Scope = "all" | "winners" | "available" | "factory";
+
+const SHEET_HEADERS = [
+  "code",
+  "is_winner",
+  "claimed",
+  "claimed_at",
+  "winner_name",
+  "winner_email",
+  "winner_phone",
+  "winner_address",
+  "generated_at",
+] as const;
 
 function escapeCsv(value: string): string {
   if (value === "") return "";
@@ -64,29 +75,44 @@ export async function GET(request: Request) {
 
     const columns = parseColumns(url.searchParams.get("columns"));
     const filtered = all.filter((r) => {
-      if (scope === "winners") return r.claimed;
-      if (scope === "available") return !r.claimed;
+      if (scope === "winners") return r.isWinner;
+      if (scope === "available") return r.isWinner && !r.claimed;
       return true;
     });
 
-    const allHeaders = SHEET_HEADERS as readonly string[];
-    const columnIndexes = columns
-      .map((c) => allHeaders.indexOf(c))
-      .filter((i) => i >= 0);
-    const selectedHeaders = columnIndexes.map((i) => allHeaders[i]);
-
-    const rows = filtered.map((r) =>
-      columnIndexes.map((i) => recordToRow(r)[i] ?? "")
-    );
-
     const lines: string[] = [];
-    lines.push(selectedHeaders.join(","));
-    for (const row of rows) {
+    lines.push(columns.join(","));
+    for (const r of filtered) {
+      const row = columns.map((col) => {
+        switch (col) {
+          case "code":
+            return r.code;
+          case "is_winner":
+            return r.isWinner ? "TRUE" : "FALSE";
+          case "claimed":
+            return r.claimed ? "TRUE" : "FALSE";
+          case "claimed_at":
+            return r.claimedAt ?? "";
+          case "winner_name":
+            return r.winnerName ?? "";
+          case "winner_email":
+            return r.winnerEmail ?? "";
+          case "winner_phone":
+            return r.winnerPhone ?? "";
+          case "winner_address":
+            return r.winnerAddress ?? "";
+          case "generated_at":
+            return r.generatedAt;
+          default:
+            return "";
+        }
+      });
       lines.push(row.map(escapeCsv).join(","));
     }
     const csv = lines.join("\r\n");
 
-    const scopePart = scope === "winners" ? "ganadores" : scope === "available" ? "disponibles" : "todos";
+    const scopePart =
+      scope === "winners" ? "ganadores" : scope === "available" ? "disponibles" : "todos";
     const filename = `binkis-${scopePart}-${today}.csv`;
 
     return new Response("﻿" + csv, {

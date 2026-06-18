@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { GenerateForm } from "@/components/admin/GenerateForm";
-import { getAllCodes } from "@/lib/sheets/codes";
+import { getAllCodes } from "@/lib/supabase/codes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

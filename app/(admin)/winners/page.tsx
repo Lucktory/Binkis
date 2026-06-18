@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { CodesTable } from "@/components/admin/CodesTable";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { getAllCodes } from "@/lib/sheets/codes";
+import { getAllCodes } from "@/lib/supabase/codes";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";

@@ -4,7 +4,7 @@ import { CodesTable } from "@/components/admin/CodesTable";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { StatusFilter } from "@/components/admin/StatusFilter";
 import { Button } from "@/components/ui/Button";
-import { getAllCodes } from "@/lib/sheets/codes";
+import { getAllCodes } from "@/lib/supabase/codes";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Hash, CircleCheck, Activity, TrendingUp, Sparkles, ShieldCheck, Trophy } from "lucide-react";
+import { Hash, CircleCheck, Activity, TrendingUp, Sparkles, ShieldCheck, Trophy, Dices } from "lucide-react";
 import { Topbar } from "@/components/admin/Topbar";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { CodesTable } from "@/components/admin/CodesTable";
@@ -7,7 +7,7 @@ import { InsightsCard } from "@/components/admin/InsightsCard";
 import { Card, CardHeader, CardTitle, CardDescription, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { buildDailySeries, computeMetrics, getAllCodes } from "@/lib/sheets/codes";
+import { buildDailySeries, computeMetrics, getAllCodes } from "@/lib/supabase/codes";
 import { formatDateTime, formatNumber, formatPercent } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         description="Estado general del sistema de validacion. Las metricas se actualizan al recargar."
         meta={
           <>
-            <Badge tone="success">Sheet conectado</Badge>
+            <Badge tone="success">Supabase conectado</Badge>
             {metrics.latestGeneratedAt ? (
               <span className="text-xs text-ink-400">
                 Ultima generacion: {formatDateTime(metrics.latestGeneratedAt)}
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
           <MetricCard
             label="Codigos totales"
             value={formatNumber(metrics.totalGenerated)}
-            hint="Generados hasta el momento"
+            hint="Generados en la base"
             icon={<Hash size={14} strokeWidth={2.25} />}
             sparkline={series.cumulative}
             delta={{
@@ -68,23 +68,22 @@ export default async function DashboardPage() {
             }}
           />
           <MetricCard
-            label="Disponibles"
-            value={formatNumber(metrics.totalAvailable)}
-            hint="No reclamados aun"
-            icon={<Activity size={14} strokeWidth={2.25} />}
-            progress={metrics.totalGenerated === 0 ? 0 : metrics.totalAvailable / metrics.totalGenerated}
+            label="Ganadores"
+            value={formatNumber(metrics.totalWinners)}
+            hint="Marcados como ganadores"
+            icon={<Trophy size={14} strokeWidth={2.25} />}
+            progress={metrics.totalGenerated === 0 ? 0 : metrics.totalWinners / metrics.totalGenerated}
           />
           <MetricCard
-            label="Reclamados"
-            value={formatNumber(metrics.totalClaimed)}
-            hint="Ganadores registrados"
-            icon={<CircleCheck size={14} strokeWidth={2.25} />}
-            sparkline={series.claimed}
+            label="Disponibles"
+            value={formatNumber(metrics.totalAvailable)}
+            hint="Ganadores no reclamados"
+            icon={<Activity size={14} strokeWidth={2.25} />}
           />
           <MetricCard
             label="Tasa de reclamo"
             value={formatPercent(metrics.claimRate)}
-            hint="Sobre el total generado"
+            hint="Reclamados sobre ganadores"
             icon={<TrendingUp size={14} strokeWidth={2.25} />}
             donut={metrics.claimRate}
           />
@@ -96,14 +95,9 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <CardTitle>Codigos recientes</CardTitle>
-                  <CardDescription>
-                    Ultimos 8 codigos agregados al sheet.
-                  </CardDescription>
+                  <CardDescription>Ultimos 8 codigos agregados a la base.</CardDescription>
                 </div>
-                <Link
-                  href="/codes"
-                  className="shrink-0 text-sm font-medium text-accent hover:underline"
-                >
+                <Link href="/codes" className="shrink-0 text-sm font-medium text-accent hover:underline">
                   Ver todos
                 </Link>
               </div>
@@ -120,13 +114,27 @@ export default async function DashboardPage() {
                 <CardDescription>Operaciones frecuentes.</CardDescription>
               </CardHeader>
               <CardBody className="flex flex-col gap-2">
-                <ActionRow href="/generate" icon={Sparkles} label="Generar batch" subtitle="Hasta 100 por click" />
+                <ActionRow href="/generate" icon={Sparkles} label="Generar batch" subtitle="Hasta 10,000 por click" />
+                <ActionRow
+                  href="/lottery"
+                  icon={Dices}
+                  label="Correr sorteo"
+                  subtitle={
+                    metrics.totalWinners > 0
+                      ? `${formatNumber(metrics.totalWinners)} ganadores seleccionados`
+                      : "Seleccionar ganadores"
+                  }
+                />
                 <ActionRow href="/verify" icon={ShieldCheck} label="Verificar codigo" subtitle="Comprobar si es ganador" />
                 <ActionRow
                   href="/winners"
                   icon={Trophy}
                   label="Ver ganadores"
-                  subtitle={metrics.totalClaimed > 0 ? `${formatNumber(metrics.totalClaimed)} reclamados` : "Sin reclamos aun"}
+                  subtitle={
+                    metrics.totalClaimed > 0
+                      ? `${formatNumber(metrics.totalClaimed)} reclamados`
+                      : "Sin reclamos aun"
+                  }
                 />
               </CardBody>
             </Card>

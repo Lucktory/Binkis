@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { markCodeClaimed } from "@/lib/sheets/codes";
+import { markCodeClaimed } from "@/lib/supabase/codes";
 import { isValidCodeFormat } from "@/lib/codes/generator";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +39,9 @@ export async function POST(request: Request) {
     const updated = await markCodeClaimed(code, winner);
     if (!updated) {
       return NextResponse.json({ error: "Codigo no existe" }, { status: 404 });
+    }
+    if (!updated.isWinner) {
+      return NextResponse.json({ error: "Este codigo no es ganador" }, { status: 400 });
     }
     if (updated.claimed && updated.winnerEmail !== winner.email) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { appendCodes, getAllCodes } from "@/lib/sheets/codes";
+import { appendCodes, getAllCodeStrings } from "@/lib/supabase/codes";
 import { generateUniqueCodes } from "@/lib/codes/generator";
 
 export const dynamic = "force-dynamic";
@@ -33,14 +33,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const existing = await getAllCodes();
-    const existingSet = new Set(existing.map((r) => r.code));
+    const existing = await getAllCodeStrings();
+    const existingSet = new Set(existing);
 
     if (existingSet.size !== existing.length) {
       const dupsBefore = existing.length - existingSet.size;
       return NextResponse.json(
         {
-          error: `El sheet ya contiene ${dupsBefore} codigo(s) duplicado(s). Revisa los datos antes de generar mas.`,
+          error: `La base ya contiene ${dupsBefore} codigo(s) duplicado(s). Revisa los datos antes de generar mas.`,
         },
         { status: 409 }
       );
@@ -58,8 +58,8 @@ export async function POST(request: Request) {
 
     await appendCodes(newCodes);
 
-    const verification = await getAllCodes();
-    const verifySet = new Set(verification.map((r) => r.code));
+    const verification = await getAllCodeStrings();
+    const verifySet = new Set(verification);
     const verificationOk =
       verification.length === existing.length + newCodes.length &&
       verifySet.size === verification.length;

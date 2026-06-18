@@ -1,7 +1,8 @@
-export type CodeStatus = "available" | "claimed";
+export type CodeStatus = "available" | "claimed" | "non-winner";
 
 export interface CodeRecord {
   code: string;
+  isWinner: boolean;
   generatedAt: string;
   claimed: boolean;
   claimedAt: string | null;
@@ -13,6 +14,7 @@ export interface CodeRecord {
 
 export interface CodeMetrics {
   totalGenerated: number;
+  totalWinners: number;
   totalClaimed: number;
   totalAvailable: number;
   claimRate: number;

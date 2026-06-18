@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { HologramCard } from "@/components/public/HologramCard";
 import { Button } from "@/components/ui/Button";
 import { isValidCodeFormat } from "@/lib/codes/generator";
-import { findCode } from "@/lib/sheets/codes";
+import { findCode } from "@/lib/supabase/codes";
 import { publicEnv } from "@/lib/env";
 
 export const dynamic = "force-dynamic";

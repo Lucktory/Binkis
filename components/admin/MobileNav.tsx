@@ -11,6 +11,7 @@ import {
   PlusSquare,
   ShieldCheck,
   Trophy,
+  Dices,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +25,7 @@ const navItems: NavItem[] = [
   { href: "/", label: "Resumen", icon: LayoutDashboard },
   { href: "/codes", label: "Codigos", icon: Hash },
   { href: "/generate", label: "Generar", icon: PlusSquare },
+  { href: "/lottery", label: "Sorteo", icon: Dices },
   { href: "/verify", label: "Verificar", icon: ShieldCheck },
   { href: "/winners", label: "Ganadores", icon: Trophy },
 ];
